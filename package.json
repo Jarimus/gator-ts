@@ -1,0 +1,32 @@
+{
+  "name": "gator-ts",
+  "version": "1.0.0",
+  "description": "A blog aggregator project for a [boot.dev course](https://www.boot.dev/courses/build-blog-aggregator-typescript).",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "tsx ./src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jarimus/gator-ts.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jarimus/gator-ts/issues"
+  },
+  "homepage": "https://github.com/jarimus/gator-ts#readme",
+  "devDependencies": {
+    "@types/node": "^24.0.10",
+    "drizzle-kit": "^0.31.4",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.44.2",
+    "postgres": "^3.4.7"
+  }
+}
