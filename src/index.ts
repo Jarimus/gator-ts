@@ -1,7 +1,7 @@
 import { error } from "console";
 import { CommandsRegistry, handlerLogin, registerCommand, CommandHandler, runCommand } from "./commands";
 
-function main() {
+async function main() {
   // Register valid commands
   const cmdRegistry: CommandsRegistry = new Map<string, CommandHandler>;
   registerCommand(cmdRegistry, "login", handlerLogin);
@@ -15,7 +15,10 @@ function main() {
   // Run the command
   const cmdName = argv[0];
   const args = argv.slice(1);
-  runCommand(cmdRegistry, cmdName, ...args);
+  await runCommand(cmdRegistry, cmdName, ...args);
+  
+  // Exit
+  process.exit(0);
 }
 
 main();
