@@ -1,10 +1,13 @@
 import { error } from "console";
-import { CommandsRegistry, handlerLogin, registerCommand, CommandHandler, runCommand } from "./commands";
+import { CommandsRegistry, handlerLogin, registerCommand, CommandHandler, runCommand, handlerRegister, handlerReset, handlerListUsers } from "./commands";
 
 async function main() {
   // Register valid commands
   const cmdRegistry: CommandsRegistry = new Map<string, CommandHandler>;
   registerCommand(cmdRegistry, "login", handlerLogin);
+  registerCommand(cmdRegistry, "register", handlerRegister);
+  registerCommand(cmdRegistry, "reset", handlerReset);
+  registerCommand(cmdRegistry, "list", handlerListUsers);
 
   // Process input
   const argv = process.argv.slice(2);
@@ -15,7 +18,11 @@ async function main() {
   // Run the command
   const cmdName = argv[0];
   const args = argv.slice(1);
-  await runCommand(cmdRegistry, cmdName, ...args);
+  try {
+    await runCommand(cmdRegistry, cmdName, ...args);
+  } catch(err) {
+    process.exit(1);
+  }
   
   // Exit
   process.exit(0);
