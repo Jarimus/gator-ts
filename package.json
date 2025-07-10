@@ -25,7 +25,8 @@
     "@types/node": "^24.0.10",
     "drizzle-kit": "^0.31.4",
     "tsx": "^4.20.3",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "fast-xml-parser": "5.2.5"
   },
   "dependencies": {
     "drizzle-orm": "^0.44.2",

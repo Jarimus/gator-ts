@@ -2,6 +2,7 @@ import { error } from "console";
 import { readConfig, setUser } from "./config";
 import { createUser, deleteAllUsers, getAllUsers, getUserByName } from "./lib/db/queries/users";
 import { db } from "./lib/db";
+import { fetchFeed } from "./rss";
 
 export type CommandHandler = (cmdName: string, ...args: string[]) => Promise<void>;
 
@@ -70,4 +71,11 @@ export async function handlerListUsers() {
     users.forEach((user) => {
         user.name === currentUser? console.log(user.name, "(current)"): console.log(user.name);
     })
+}
+
+const testURL = "https://www.wagslane.dev/index.xml";
+
+export async function handlerGetFeeds() {
+    const feed = await fetchFeed(testURL);
+    console.log(JSON.stringify(feed, null, 2));
 }

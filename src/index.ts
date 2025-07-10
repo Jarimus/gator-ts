@@ -1,5 +1,5 @@
 import { error } from "console";
-import { CommandsRegistry, handlerLogin, registerCommand, CommandHandler, runCommand, handlerRegister, handlerReset, handlerListUsers } from "./commands";
+import { CommandsRegistry, handlerLogin, registerCommand, CommandHandler, runCommand, handlerRegister, handlerReset, handlerListUsers, handlerGetFeeds } from "./commands";
 
 async function main() {
   // Register valid commands
@@ -8,6 +8,7 @@ async function main() {
   registerCommand(cmdRegistry, "register", handlerRegister);
   registerCommand(cmdRegistry, "reset", handlerReset);
   registerCommand(cmdRegistry, "list", handlerListUsers);
+  registerCommand(cmdRegistry, "agg", handlerGetFeeds);
 
   // Process input
   const argv = process.argv.slice(2);
