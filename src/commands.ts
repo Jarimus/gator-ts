@@ -54,11 +54,17 @@ export async function handlerRegister(cmdName:string, ...args: string[]) {
 export async function handlerReset(cmdName: string, ...args: string[]) {
     // Call the database to clear the users
     await deleteAllUsers();
+    console.log("All users deleted successfully");
 }
 
 export async function handlerListUsers() {
     // Call the database for all users
     const users = await getAllUsers();
+    // If there are no users in the database, display a special message
+    if (users.length === 0) {
+        console.log("No users in the database.");
+        process.exit(0);
+    }
     // Get current user from config
     const currentUser = readConfig().currentUserName;
     users.forEach((user) => {
