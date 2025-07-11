@@ -3,6 +3,7 @@ import { readConfig, setUser } from "./config";
 import { createUser, deleteAllUsers, getAllUsers, getUserByName } from "./lib/db/queries/users";
 import { db } from "./lib/db";
 import { fetchFeed } from "./rss";
+import { createFeed, getFeed } from "./lib/db/queries/feeds";
 
 export type CommandHandler = (cmdName: string, ...args: string[]) => Promise<void>;
 
@@ -58,7 +59,7 @@ export async function handlerReset(cmdName: string, ...args: string[]) {
     console.log("All users deleted successfully");
 }
 
-export async function handlerListUsers() {
+export async function handlerListUsers(cmdName: string, ...args: string[]) {
     // Call the database for all users
     const users = await getAllUsers();
     // If there are no users in the database, display a special message
@@ -75,7 +76,38 @@ export async function handlerListUsers() {
 
 const testURL = "https://www.wagslane.dev/index.xml";
 
-export async function handlerGetFeeds() {
+export async function handlerGetFeeds(cmdName: string, ...args: string[]) {
     const feed = await fetchFeed(testURL);
     console.log(JSON.stringify(feed, null, 2));
+}
+
+export async function handlerAddFeed(cmdName: string, ...args: string[]) {
+    // Check for feedName and feedUrl args
+    if (args.length < 2) {
+        console.log("addfeed command needs two arguments: addfeed <feed name> <feed url>");
+        process.exit(1);
+    }
+
+    // Get all the values
+    const cfg = readConfig();
+    const feedName = args[0];
+    const feedUrl = args[1];
+    const currentUser = await getUserByName(cfg.currentUserName);
+
+    // Check whether the feed already exists in the database
+    const dbFeed = await getFeed(feedUrl);
+    if (!(dbFeed === undefined)) {
+        console.log("Feed already exists in the database.");
+        process.exit(1);
+    }
+
+    // Check for current user to be active
+    if (currentUser === undefined) {
+        console.log("No user currently active.");
+        process.exit(1);
+    }
+
+    // Create the feed in the database
+    const feed = await createFeed(feedName, currentUser.id, feedUrl);
+    console.log(`Feed "${feedName}" added to the database under username "${currentUser.name}"`)
 }
