@@ -15,6 +15,13 @@
       "when": 1752253731510,
       "tag": "0001_daffy_vapor",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1752346895607,
+      "tag": "0002_tough_shaman",
+      "breakpoints": true
     }
   ]
 }

@@ -85,5 +85,6 @@ export type Feed = typeof feeds.$inferSelect;
 export type User = typeof users.$inferSelect;
 
 export async function printFeed(feed: Feed, user: User) {
-    console.log("Not implemented (Supposed to print a feed, duh");
+    console.log(feed);
+    console.log(user);
 }

@@ -4,6 +4,8 @@ import { createUser, deleteAllUsers, getAllUsers, getUserByName } from "./lib/db
 import { db } from "./lib/db";
 import { fetchFeed } from "./rss";
 import { createFeed, getFeed } from "./lib/db/queries/feeds";
+import { createFeedFollow, getFeedFollowsForUser } from "./lib/db/queries/feed_follows";
+import { feedFollows } from "./lib/db/schema";
 
 export type CommandHandler = (cmdName: string, ...args: string[]) => Promise<void>;
 
@@ -109,5 +111,51 @@ export async function handlerAddFeed(cmdName: string, ...args: string[]) {
 
     // Create the feed in the database
     const feed = await createFeed(feedName, currentUser.id, feedUrl);
+
+    // Check that the feed is created successfully
+    if (feed === undefined) {
+        console.log("Error creating the feed");
+        process.exit(1);
+    }
+
+    const feedFollow = await createFeedFollow(currentUser.id, feed.id);
     console.log(`Feed "${feedName}" added to the database under username "${currentUser.name}"`)
+}
+
+export async function handlerFollow(cmdName: string, ...args: string[]) {
+    if (args.length < 1) {
+        console.log("Not enough arguments. Usage: follow <url>");
+        process.exit(1);
+    }
+    const url = args[0];
+    const dbFeed = await getFeed(url);
+    const currentUserName = readConfig().currentUserName;
+    const currentUser = await getUserByName(currentUserName);
+
+    // Check for current user to be active
+    if (currentUser === undefined) {
+        console.log("No user currently active.");
+        process.exit(1);
+    }
+
+    const newFeedFollow = await createFeedFollow(currentUser.id, dbFeed.id);
+
+    console.log(`Feed follow for feed "${dbFeed.name}" for user ${currentUserName} created.`)
+}
+
+export async function handlerFollowing(cmdName:string, ...args: string[]) {
+    const currentUserName = readConfig().currentUserName;
+    const currentUser = await getUserByName(readConfig().currentUserName);
+
+    // Check for current user to be active
+    if (currentUser === undefined) {
+        console.log("No user currently active.");
+        process.exit(1);
+    }
+
+    const feedFollows = await getFeedFollowsForUser(currentUser.id);
+
+    // List feedFollows
+    console.log(`User "${currentUser.name}" followings:`)
+    feedFollows.forEach( (feedFollow) => {console.log(`${feedFollow.feedName} (${feedFollow.feedUrl})`)});
 }
