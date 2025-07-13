@@ -4,7 +4,7 @@ import { createUser, deleteAllUsers, getAllUsers, getUserByName } from "./lib/db
 import { db } from "./lib/db";
 import { fetchFeed } from "./rss";
 import { createFeed, getFeed } from "./lib/db/queries/feeds";
-import { createFeedFollow, getFeedFollowsForUser } from "./lib/db/queries/feed_follows";
+import { createFeedFollow, getFeedFollowsForUser, getFeeds } from "./lib/db/queries/feed_follows";
 import { feedFollows } from "./lib/db/schema";
 
 export type CommandHandler = (cmdName: string, ...args: string[]) => Promise<void>;
@@ -21,6 +21,7 @@ export async function runCommand(registry: CommandsRegistry, cmdName: string, ..
         try {
             await handler(cmdName, ...args);
         } catch(err) {
+            console.log(err);
             process.exit(1);
         }
     } else {
@@ -158,4 +159,13 @@ export async function handlerFollowing(cmdName:string, ...args: string[]) {
     // List feedFollows
     console.log(`User "${currentUser.name}" followings:`)
     feedFollows.forEach( (feedFollow) => {console.log(`${feedFollow.feedName} (${feedFollow.feedUrl})`)});
+}
+
+export async function handlerFeeds() {
+    const feeds = await getFeeds();
+    feeds.forEach((feed) => {
+        console.log(`${feed.feedName} (${feed.userName})`);
+        console.log(`${feed.feedUrl}`);
+        console.log("-----------------------------------------");
+    })
 }
