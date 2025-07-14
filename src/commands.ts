@@ -1,15 +1,40 @@
 import { error } from "console";
 import { readConfig, setUser } from "./config";
 import { createUser, deleteAllUsers, getAllUsers, getUserByName } from "./lib/db/queries/users";
-import { db } from "./lib/db";
-import { fetchFeed } from "./rss";
+import { fetchFeed, User } from "./rss";
 import { createFeed, getFeed } from "./lib/db/queries/feeds";
 import { createFeedFollow, getFeedFollowsForUser, getFeeds } from "./lib/db/queries/feed_follows";
-import { feedFollows } from "./lib/db/schema";
 
 export type CommandHandler = (cmdName: string, ...args: string[]) => Promise<void>;
 
 export type CommandsRegistry = Map<string, CommandHandler>;
+
+type UserCommandHandler = (
+  cmdName: string,
+  user: User,
+  ...args: string[]
+) => Promise<void>;
+
+type middlewareLoggedIn = (handler: UserCommandHandler) => CommandHandler;
+
+export function middlewareLoggedIn(handler:UserCommandHandler) {
+    // Call the handler with the current user
+    return async (cmdName: string, ...args: string[]) => {
+        try {
+            // Check if the user is logged in
+            const currentUserName = readConfig().currentUserName;
+            const currentUser = await getUserByName(currentUserName);
+            if (!currentUser) {
+                console.error("No user currently active. Please login first.", 1);
+                process.exit(1);
+            }
+            await handler(cmdName, currentUser, ...args);
+        } catch (err) {
+            console.error(err);
+            process.exit(1);
+        }
+    }
+}
 
 export function registerCommand(registry: CommandsRegistry, cmdName: string, handler: CommandHandler) {
     registry.set(cmdName, handler);
@@ -84,7 +109,7 @@ export async function handlerGetFeeds(cmdName: string, ...args: string[]) {
     console.log(JSON.stringify(feed, null, 2));
 }
 
-export async function handlerAddFeed(cmdName: string, ...args: string[]) {
+export async function handlerAddFeed(cmdName: string, user: User, ...args: string[]) {
     // Check for feedName and feedUrl args
     if (args.length < 2) {
         console.log("addfeed command needs two arguments: addfeed <feed name> <feed url>");
@@ -104,14 +129,14 @@ export async function handlerAddFeed(cmdName: string, ...args: string[]) {
         process.exit(1);
     }
 
-    // Check for current user to be active
-    if (currentUser === undefined) {
-        console.log("No user currently active.");
-        process.exit(1);
-    }
+    // // Check for current user to be active
+    // if (currentUser === undefined) {
+    //     console.log("No user currently active.");
+    //     process.exit(1);
+    // }
 
     // Create the feed in the database
-    const feed = await createFeed(feedName, currentUser.id, feedUrl);
+    const feed = await createFeed(feedName, user.id, feedUrl);
 
     // Check that the feed is created successfully
     if (feed === undefined) {
@@ -119,11 +144,11 @@ export async function handlerAddFeed(cmdName: string, ...args: string[]) {
         process.exit(1);
     }
 
-    const feedFollow = await createFeedFollow(currentUser.id, feed.id);
-    console.log(`Feed "${feedName}" added to the database under username "${currentUser.name}"`)
+    const feedFollow = await createFeedFollow(user.id, feed.id);
+    console.log(`Feed "${feedName}" added to the database under username "${user.name}"`)
 }
 
-export async function handlerFollow(cmdName: string, ...args: string[]) {
+export async function handlerFollow(cmdName: string, user: User, ...args: string[]) {
     if (args.length < 1) {
         console.log("Not enough arguments. Usage: follow <url>");
         process.exit(1);
@@ -134,30 +159,51 @@ export async function handlerFollow(cmdName: string, ...args: string[]) {
     const currentUser = await getUserByName(currentUserName);
 
     // Check for current user to be active
-    if (currentUser === undefined) {
-        console.log("No user currently active.");
-        process.exit(1);
-    }
+    // if (currentUser === undefined) {
+    //     console.log("No user currently active.");
+    //     process.exit(1);
+    // }
 
-    const newFeedFollow = await createFeedFollow(currentUser.id, dbFeed.id);
+    const newFeedFollow = await createFeedFollow(user.id, dbFeed.id);
 
     console.log(`Feed follow for feed "${dbFeed.name}" for user ${currentUserName} created.`)
 }
 
-export async function handlerFollowing(cmdName:string, ...args: string[]) {
-    const currentUserName = readConfig().currentUserName;
-    const currentUser = await getUserByName(readConfig().currentUserName);
-
-    // Check for current user to be active
-    if (currentUser === undefined) {
-        console.log("No user currently active.");
+export async function handlerUnfollow(cmdName: string, user: User, ...args: string[]) {
+    if (args.length < 1) {
+        console.log("Not enough arguments. Usage: follow <url>");
         process.exit(1);
     }
+    const url = args[0];
+    const dbFeed = await getFeed(url);
+    const currentUserName = readConfig().currentUserName;
+    const currentUser = await getUserByName(currentUserName);
 
-    const feedFollows = await getFeedFollowsForUser(currentUser.id);
+    // Check for current user to be active
+    // if (currentUser === undefined) {
+    //     console.log("No user currently active.");
+    //     process.exit(1);
+    // }
+
+    const newFeedFollow = await createFeedFollow(user.id, dbFeed.id);
+
+    console.log(`Feed follow for feed "${dbFeed.name}" for user ${currentUserName} created.`)
+}
+
+export async function handlerFollowing(cmdName:string, user: User, ...args: string[]) {
+    // const currentUserName = readConfig().currentUserName;
+    // const currentUser = await getUserByName(readConfig().currentUserName);
+
+    // Check for current user to be active
+    // if (currentUser === undefined) {
+    //     console.log("No user currently active.");
+    //     process.exit(1);
+    // }
+
+    const feedFollows = await getFeedFollowsForUser(user.id);
 
     // List feedFollows
-    console.log(`User "${currentUser.name}" followings:`)
+    console.log(`User "${user.name}" followings:`)
     feedFollows.forEach( (feedFollow) => {console.log(`${feedFollow.feedName} (${feedFollow.feedUrl})`)});
 }
 
