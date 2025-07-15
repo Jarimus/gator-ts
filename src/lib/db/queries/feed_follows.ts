@@ -54,12 +54,6 @@ export async function getFeedFollowsForUser(user_id:string) {
 }
 
 export async function getFeeds() {
-    const result = await db.select({
-        feedName: feeds.name,
-        feedUrl: feeds.url,
-        userName: users.name
-    }).from(feedFollows)
-    .innerJoin(feeds, eq(feeds.id, feedFollows.feed_id))
-    .innerJoin(users, eq(users.id, feedFollows.user_id));
-    return result;
+    const dbFeeds = await db.select().from(feeds)
+    return dbFeeds;
 }

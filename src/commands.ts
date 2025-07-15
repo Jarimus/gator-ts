@@ -1,6 +1,6 @@
 import { error } from "console";
 import { readConfig, setUser } from "./config";
-import { createUser, deleteAllUsers, getAllUsers, getUserByName } from "./lib/db/queries/users";
+import { createUser, deleteAllUsers, getAllUsers, getUserById, getUserByName } from "./lib/db/queries/users";
 import { fetchFeed, User } from "./rss";
 import { createFeed, getFeed } from "./lib/db/queries/feeds";
 import { createFeedFollow, deleteFeedFollow, getFeedFollowsForUser, getFeeds } from "./lib/db/queries/feed_follows";
@@ -183,9 +183,16 @@ export async function handlerFollowing(cmdName:string, user: User, ...args: stri
 
 export async function handlerFeeds() {
     const feeds = await getFeeds();
-    feeds.forEach((feed) => {
-        console.log(`${feed.feedName} (${feed.userName})`);
-        console.log(`${feed.feedUrl}`);
+
+    if (feeds.length === 0) {
+        console.log("No feeds found.");
+        return;
+    }
+
+    for (let feed of feeds) {
+        const user = await getUserById(feed.user_id);
+        console.log(`${feed.name} (${user?.name})`);
+        console.log(`${feed.url}`);
         console.log("-----------------------------------------");
-    })
+    }
 }

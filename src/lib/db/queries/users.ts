@@ -16,6 +16,15 @@ export async function getUserByName(name: string) {
     }
 }
 
+export async function getUserById(id: string) {
+    try {
+        const [result] = await db.select().from(users).where(eq(users.id, id));
+        return result;
+    } catch (err) {
+        console.error(err);
+    }
+}
+
 export async function deleteAllUsers() {
     try {
         const [result] = await db.delete(users);
