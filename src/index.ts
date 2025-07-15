@@ -1,5 +1,5 @@
 import { error } from "console";
-import { CommandsRegistry, handlerLogin, registerCommand, CommandHandler, runCommand, handlerRegister, handlerReset, handlerListUsers, handlerGetFeeds, handlerAddFeed, handlerFollow, handlerFollowing, handlerFeeds, middlewareLoggedIn } from "./commands";
+import { CommandsRegistry, handlerLogin, registerCommand, CommandHandler, runCommand, handlerRegister, handlerReset, handlerListUsers, handlerGetFeeds, handlerAddFeed, handlerFollow, handlerFollowing, handlerFeeds, middlewareLoggedIn, handlerUnfollow } from "./commands";
 
 async function main() {
   // Register valid commands
@@ -11,6 +11,7 @@ async function main() {
   registerCommand(cmdRegistry, "agg", handlerGetFeeds);
   registerCommand(cmdRegistry, "addfeed", middlewareLoggedIn(handlerAddFeed));
   registerCommand(cmdRegistry, "follow", middlewareLoggedIn(handlerFollow));
+  registerCommand(cmdRegistry, "unfollow", middlewareLoggedIn(handlerUnfollow));
   registerCommand(cmdRegistry, "following", middlewareLoggedIn(handlerFollowing));
   registerCommand(cmdRegistry, "feeds", handlerFeeds);
 

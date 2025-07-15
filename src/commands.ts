@@ -3,7 +3,7 @@ import { readConfig, setUser } from "./config";
 import { createUser, deleteAllUsers, getAllUsers, getUserByName } from "./lib/db/queries/users";
 import { fetchFeed, User } from "./rss";
 import { createFeed, getFeed } from "./lib/db/queries/feeds";
-import { createFeedFollow, getFeedFollowsForUser, getFeeds } from "./lib/db/queries/feed_follows";
+import { createFeedFollow, deleteFeedFollow, getFeedFollowsForUser, getFeeds } from "./lib/db/queries/feed_follows";
 
 export type CommandHandler = (cmdName: string, ...args: string[]) => Promise<void>;
 
@@ -117,10 +117,8 @@ export async function handlerAddFeed(cmdName: string, user: User, ...args: strin
     }
 
     // Get all the values
-    const cfg = readConfig();
     const feedName = args[0];
     const feedUrl = args[1];
-    const currentUser = await getUserByName(cfg.currentUserName);
 
     // Check whether the feed already exists in the database
     const dbFeed = await getFeed(feedUrl);
@@ -128,12 +126,6 @@ export async function handlerAddFeed(cmdName: string, user: User, ...args: strin
         console.log("Feed already exists in the database.");
         process.exit(1);
     }
-
-    // // Check for current user to be active
-    // if (currentUser === undefined) {
-    //     console.log("No user currently active.");
-    //     process.exit(1);
-    // }
 
     // Create the feed in the database
     const feed = await createFeed(feedName, user.id, feedUrl);
@@ -155,18 +147,14 @@ export async function handlerFollow(cmdName: string, user: User, ...args: string
     }
     const url = args[0];
     const dbFeed = await getFeed(url);
-    const currentUserName = readConfig().currentUserName;
-    const currentUser = await getUserByName(currentUserName);
-
-    // Check for current user to be active
-    // if (currentUser === undefined) {
-    //     console.log("No user currently active.");
-    //     process.exit(1);
-    // }
-
     const newFeedFollow = await createFeedFollow(user.id, dbFeed.id);
 
-    console.log(`Feed follow for feed "${dbFeed.name}" for user ${currentUserName} created.`)
+    if (!newFeedFollow) {
+        console.error("Error creating a feed follow.");
+        process.exit(1);
+    }
+
+    console.log(`Feed follow for feed "${dbFeed.name}" for user ${user.name} created.`)
 }
 
 export async function handlerUnfollow(cmdName: string, user: User, ...args: string[]) {
@@ -175,31 +163,17 @@ export async function handlerUnfollow(cmdName: string, user: User, ...args: stri
         process.exit(1);
     }
     const url = args[0];
-    const dbFeed = await getFeed(url);
-    const currentUserName = readConfig().currentUserName;
-    const currentUser = await getUserByName(currentUserName);
+    const dbFeed = await deleteFeedFollow(url);
 
-    // Check for current user to be active
-    // if (currentUser === undefined) {
-    //     console.log("No user currently active.");
-    //     process.exit(1);
-    // }
+    if (!dbFeed) {
+        console.error("Failed to delete feed follow.");
+        process.exit(1);
+    }
 
-    const newFeedFollow = await createFeedFollow(user.id, dbFeed.id);
-
-    console.log(`Feed follow for feed "${dbFeed.name}" for user ${currentUserName} created.`)
+    console.log(`Feed follow for feed "${url}" for user ${user.name} deleted.`)
 }
 
 export async function handlerFollowing(cmdName:string, user: User, ...args: string[]) {
-    // const currentUserName = readConfig().currentUserName;
-    // const currentUser = await getUserByName(readConfig().currentUserName);
-
-    // Check for current user to be active
-    // if (currentUser === undefined) {
-    //     console.log("No user currently active.");
-    //     process.exit(1);
-    // }
-
     const feedFollows = await getFeedFollowsForUser(user.id);
 
     // List feedFollows
