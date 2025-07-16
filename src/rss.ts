@@ -3,6 +3,7 @@ import { parse } from "path";
 import { exit } from "process";
 import { stringify } from "querystring";
 import { feeds, users } from "./lib/db/schema";
+import { getNextFeedToFetch, markFeedFetched } from "./lib/db/queries/feeds";
 
 export type RSSFeed = {
   channel: {
@@ -84,7 +85,27 @@ export async function fetchFeed(url: string) {
 export type Feed = typeof feeds.$inferSelect;
 export type User = typeof users.$inferSelect;
 
-export async function printFeed(feed: Feed, user: User) {
-    console.log(feed);
-    console.log(user);
+export async function scrapeFeeds() {
+    // Get next feed
+    const feed = await getNextFeedToFetch();
+    if (!feed) {
+        throw new Error("Next feed not found.");
+    }
+
+    // Mark it fetched
+    await markFeedFetched(feed.id);
+
+    // Fetch using url (fetchFeed function)
+    const rssFeed = await fetchFeed(feed.url);
+
+    // Iterate over items, print titles
+    if (rssFeed.channel.item.length === 0) {
+        console.log("No items in rss feed.");
+    }
+
+    console.log(`Next RSSFeed: ${rssFeed.channel.title}\n`)
+    for (const item of rssFeed.channel.item.slice(0, 5)) {
+        console.log(item.title);
+    }
+    console.log();
 }
