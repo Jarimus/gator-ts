@@ -1,7 +1,4 @@
 import { XMLParser } from "fast-xml-parser";
-import { parse } from "path";
-import { exit } from "process";
-import { stringify } from "querystring";
 import { feeds, users } from "./lib/db/schema";
 import { getNextFeedToFetch, markFeedFetched } from "./lib/db/queries/feeds";
 
@@ -82,9 +79,6 @@ export async function fetchFeed(url: string) {
     return feed;
 }
 
-export type Feed = typeof feeds.$inferSelect;
-export type User = typeof users.$inferSelect;
-
 export async function scrapeFeeds() {
     // Get next feed
     const feed = await getNextFeedToFetch();
@@ -103,9 +97,11 @@ export async function scrapeFeeds() {
         console.log("No items in rss feed.");
     }
 
-    console.log(`Next RSSFeed: ${rssFeed.channel.title}\n`)
+    console.log(`Adding feeds to database from ${rssFeed.channel.title}\n`)
     for (const item of rssFeed.channel.item.slice(0, 5)) {
         console.log(item.title);
+        // TODO:
+        // Store posts in the database
     }
     console.log();
 }

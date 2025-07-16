@@ -1,8 +1,6 @@
 import { asc, eq, isNull, sql } from "drizzle-orm";
 import { db } from "..";
 import { feeds } from "../schema";
-import { date } from "drizzle-orm/mysql-core";
-import { PgDate } from "drizzle-orm/pg-core";
 import { readConfig } from "src/config";
 import { getUserByName } from "./users";
 

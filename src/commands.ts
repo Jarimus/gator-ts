@@ -1,10 +1,11 @@
 import { error } from "console";
 import { readConfig, setUser } from "./config";
 import { createUser, deleteAllUsers, getAllUsers, getUserById, getUserByName } from "./lib/db/queries/users";
-import { fetchFeed, scrapeFeeds, User } from "./rss";
+import { scrapeFeeds } from "./rss";
 import { createFeed, getFeed } from "./lib/db/queries/feeds";
 import { createFeedFollow, deleteFeedFollow, getFeedFollowsForUser, getFeeds } from "./lib/db/queries/feed_follows";
 import { displayFetchInterval, parseDuration } from "./utils";
+import { User } from "./lib/db/schema";
 
 export type CommandHandler = (cmdName: string, ...args: string[]) => Promise<void>;
 
