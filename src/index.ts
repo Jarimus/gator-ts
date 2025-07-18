@@ -1,5 +1,5 @@
 import { error } from "console";
-import { CommandsRegistry, handlerLogin, registerCommand, CommandHandler, runCommand, handlerRegister, handlerReset, handlerListUsers, handlerGetFeeds, handlerAddFeed, handlerFollow, handlerFollowing, handlerFeeds, middlewareLoggedIn, handlerUnfollow } from "./commands";
+import { CommandsRegistry, handlerLogin, registerCommand, CommandHandler, runCommand, handlerRegister, handlerReset, handlerListUsers, handlerGetFeeds, handlerAddFeed, handlerFollow, handlerFollowing, handlerFeeds, middlewareLoggedIn, handlerUnfollow, handlerBrowse } from "./commands";
 
 async function main() {
   // Register valid commands
@@ -14,6 +14,7 @@ async function main() {
   registerCommand(cmdRegistry, "unfollow", middlewareLoggedIn(handlerUnfollow));
   registerCommand(cmdRegistry, "following", middlewareLoggedIn(handlerFollowing));
   registerCommand(cmdRegistry, "feeds", handlerFeeds);
+  registerCommand(cmdRegistry, "browse", middlewareLoggedIn(handlerBrowse));
 
   // Process input
   const argv = process.argv.slice(2);

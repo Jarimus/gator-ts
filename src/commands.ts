@@ -6,6 +6,7 @@ import { createFeed, getFeed } from "./lib/db/queries/feeds";
 import { createFeedFollow, deleteFeedFollow, getFeedFollowsForUser, getFeeds } from "./lib/db/queries/feed_follows";
 import { displayFetchInterval, parseDuration } from "./utils";
 import { User } from "./lib/db/schema";
+import { getPostsForUser } from "./lib/db/queries/posts";
 
 export type CommandHandler = (cmdName: string, ...args: string[]) => Promise<void>;
 
@@ -214,5 +215,35 @@ export async function handlerFeeds() {
         console.log(`${feed.name} (${user?.name})`);
         console.log(`${feed.url}`);
         console.log("-----------------------------------------");
+    }
+}
+
+export async function handlerBrowse(cmdName: string, user: User, ...args: string[]) {
+    let limit;
+    if (args.length === 0) {
+        console.log("Number of posts not provided as argument. Defaulting to 2.")
+        limit = 2;
+    } else {
+        try {
+            limit = Number(args[0]);
+        } catch (err) {
+            console.log("Please provide a valid number for the number of posts.\n")
+            process.exit(1);
+        }
+    }
+    const posts = await getPostsForUser(user, limit);
+
+    for (let i = 0; i < limit; i++) {
+        const post = posts[i];
+        if (post === undefined) {
+            process.exit(0);
+        }
+
+        // Display post
+        console.log(`${post.title} (${post.publishedAt.getDate()}.${post.publishedAt.getMonth()}.${post.publishedAt.getFullYear()})
+${post.url}
+
+${post.description}
+===================================================================================`)
     }
 }

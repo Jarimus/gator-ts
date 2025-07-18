@@ -1,6 +1,7 @@
 import { XMLParser } from "fast-xml-parser";
 import { feeds, users } from "./lib/db/schema";
 import { getNextFeedToFetch, markFeedFetched } from "./lib/db/queries/feeds";
+import { createPost } from "./lib/db/queries/posts";
 
 export type RSSFeed = {
   channel: {
@@ -100,8 +101,7 @@ export async function scrapeFeeds() {
     console.log(`Adding feeds to database from ${rssFeed.channel.title}\n`)
     for (const item of rssFeed.channel.item.slice(0, 5)) {
         console.log(item.title);
-        // TODO:
-        // Store posts in the database
+        createPost(item, feed.id);
     }
     console.log();
 }
